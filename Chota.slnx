@@ -1,6 +1,8 @@
 <Solution>
-  <Project Path="src/ApiService/ApiService.csproj" />
-  <Project Path="src/AppHost/AppHost.csproj" />
-  <Project Path="src/ServiceDefaults/ServiceDefaults.csproj" />
-  <Project Path="src/Web/Web.csproj" />
+  <Project Path="src/Chota.Api/Chota.Api.csproj" />
+  <Project Path="src/Chota.AppHost/Chota.AppHost.csproj" />
+  <Project Path="src/Chota.ServiceDefaults/Chota.ServiceDefaults.csproj" />
+  <Project Path="src/Chota.Tests/Chota.Tests.csproj" />
+  <Project Path="src/Chota.MigrationService/Chota.MigrationService.csproj" />
+  <Project Path="src/Chota.Web/Chota.Web.csproj" />
 </Solution>
