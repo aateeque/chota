@@ -11,22 +11,20 @@ namespace Chota.Api.Services
             if (string.IsNullOrWhiteSpace(url))
                 return false;
 
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uriResult))
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uriResult)) 
+                return UrlRegex.IsMatch(url);
+            
+            // Accept only http, https, ftp
+            if (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
             {
-                // Accept only http, https, ftp
-                if (uriResult.Scheme == Uri.UriSchemeHttp ||
-                    uriResult.Scheme == Uri.UriSchemeHttps ||
-                    uriResult.Scheme == Uri.UriSchemeFtp)
-                {
-                    return true;
-                }
+                return true;
             }
 
             // Fallback to regex
             return UrlRegex.IsMatch(url);
         }
 
-        [GeneratedRegex(@"^(https?|ftp)://[^\s/$.?#].[^\s]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-GB")]
+        [GeneratedRegex(@"^(https?)://[^\s/$.?#].[^\s]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-GB")]
         private static partial Regex MyRegex();
     }
 }

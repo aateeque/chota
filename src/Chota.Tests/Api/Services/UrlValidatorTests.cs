@@ -10,7 +10,6 @@ public class UrlValidatorTests
     [Test]
     [Arguments("https://example.com")]
     [Arguments("http://example.com")]
-    [Arguments("ftp://example.com")]
     [Arguments("https://www.example.com")]
     [Arguments("http://subdomain.example.com")]
     [Arguments("https://example.com/path")]
@@ -45,6 +44,7 @@ public class UrlValidatorTests
     [Arguments("tel:+1234567890")]
     [Arguments("ssh://user@server.com")]
     [Arguments("ldap://server.com")]
+    [Arguments("ftp://example.com")]
     public async Task IsValid_UnsupportedSchemes_ReturnsFalse(string url)
     {
         var result = _validator.IsValid(url);
@@ -71,7 +71,6 @@ public class UrlValidatorTests
     [Arguments("https://192.168.1.1")]
     [Arguments("http://127.0.0.1:3000")]
     [Arguments("https://[2001:db8::1]")]
-    [Arguments("ftp://10.0.0.1/file.txt")]
     public async Task IsValid_IpAddresses_ReturnsTrue(string url)
     {
         var result = _validator.IsValid(url);
@@ -93,7 +92,6 @@ public class UrlValidatorTests
     [Test]
     [Arguments("HTTPS://EXAMPLE.COM")]
     [Arguments("HTTP://EXAMPLE.COM")]
-    [Arguments("FTP://EXAMPLE.COM")]
     [Arguments("HtTpS://ExAmPlE.CoM")]
     public async Task IsValid_CaseInsensitiveSchemes_ReturnsTrue(string url)
     {
@@ -131,7 +129,6 @@ public class UrlValidatorTests
 
     [Test]
     [Arguments("https://sub1.sub2.sub3.example.com")]
-    [Arguments("ftp://files.downloads.example.org/folder/file.zip")]
     public async Task IsValid_DeepSubdomainsAndPaths_ReturnsTrue(string url)
     {
         var result = _validator.IsValid(url);

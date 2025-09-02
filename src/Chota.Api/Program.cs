@@ -1,15 +1,12 @@
-using IdGen;
 using IdGen.DependencyInjection;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Chota.Api.Data;
 using Chota.Api.Models;
 using Chota.Api.Services;
 using Chota.ServiceDefaults;
 
-var chotaServiceBaseUrl = new Uri("https://s.co/");
+var chotaServiceBaseUrl = new Uri("https://cho.ta/");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,7 +86,7 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [Fro
         };
     }
 
-    if (httpContextAccessor.HttpContext!.Request.Headers["User-Agent"].ToString().Contains("Mozilla"))
+    if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
     {
         result.Value!.BrowserClickCount++;
     }
