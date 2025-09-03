@@ -18,7 +18,11 @@ var migrations = builder.AddProject<Chota_MigrationService>("migrations")
 
 
 builder.AddProject<Chota_Api>("api")
-       .WithExternalHttpEndpoints()
+       .WithUrlForEndpoint("https", url =>
+       {
+           url.DisplayText = "Scalar UI";
+           url.Url = "/scalar";
+       })
        .WithReference(redis)
        .WithReference(postgres)
        .WithReference(pgDb)
