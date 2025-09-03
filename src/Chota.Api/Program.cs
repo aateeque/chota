@@ -21,7 +21,7 @@ builder.Services.AddHealthChecks();
 // Register caching services
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("redis");
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
 builder.AddNpgsqlDbContext<UrlDbContext>(connectionName: "Chota");

@@ -2,22 +2,22 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var redis = builder.AddRedis("redis")
+var redis = builder.AddRedis("Redis")
                    .WithRedisCommander();
 
-var postgres = builder.AddPostgres("postgres")
+var postgres = builder.AddPostgres("Postgres")
                       .WithPgAdmin();
 
 var pgDb = postgres.AddDatabase("Chota");
 
-var migrations = builder.AddProject<Chota_MigrationService>("migrations")
+var migrations = builder.AddProject<Chota_MigrationService>("Migrations")
     .WithReference(pgDb)
     .WithReference(postgres)
     .WaitFor(pgDb)
     .WaitFor(postgres);
 
 
-builder.AddProject<Chota_Api>("api")
+builder.AddProject<Chota_Api>("Api")
        .WithUrlForEndpoint("https", url =>
        {
            url.DisplayText = "Scalar UI";
@@ -29,6 +29,6 @@ builder.AddProject<Chota_Api>("api")
        .WithReference(migrations)
        .WaitFor(migrations);
 
-builder.AddProject<Projects.Chota_RedisHydrator>("chota-redishydrator");
+builder.AddProject<Projects.Chota_RedisHydrator>("Chota-redishydrator");
 
 builder.Build().Run();
