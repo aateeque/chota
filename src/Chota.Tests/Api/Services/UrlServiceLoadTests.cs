@@ -23,7 +23,7 @@ public class UrlServiceLoadTests
 
         // Setup optimistic mocks for load testing
         mockValidator.IsValid(Arg.Any<string>()).Returns(true);
-        mockRepository.GetByLongUrl(Arg.Any<string>()).Returns((ShortUrl?)null);
+        mockRepository.GetByLongUrlHash(Arg.Any<string>()).Returns((ShortUrl?)null);
         mockIdGenerator.GenerateNextId().Returns(Random.Shared.NextInt64(1, 1000000));
         mockEncoder.Encode(Arg.Any<long>()).Returns(args => $"short{args.Arg<long>()}");
         mockRepository.Save(Arg.Any<ShortUrl>()).Returns(Task.CompletedTask);

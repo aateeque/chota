@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Chota.Api\Chota.Api.csproj" />
     <ProjectReference Include="..\Chota.MigrationService\Chota.MigrationService.csproj" />
+    <ProjectReference Include="..\Chota.RedisHydrator\Chota.RedisHydrator.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="src/Chota.Api/Chota.Api.csproj" />
   <Project Path="src/Chota.AppHost/Chota.AppHost.csproj" />
+  <Project Path="src/Chota.RedisHydrator/Chota.RedisHydrator.csproj" />
   <Project Path="src/Chota.ServiceDefaults/Chota.ServiceDefaults.csproj" />
   <Project Path="src/Chota.Tests/Chota.Tests.csproj" />
   <Project Path="src/Chota.MigrationService/Chota.MigrationService.csproj" />

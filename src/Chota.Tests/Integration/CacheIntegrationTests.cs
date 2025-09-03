@@ -60,7 +60,7 @@
 //        await repository.Save(shortUrl);
 
 //        // Test cache hierarchy for long URL lookup
-//        var result = await repository.GetByLongUrl(longUrl);
+//        var result = await repository.GetByLongUrlHash(longUrl);
 //        await Assert.That(result).IsNotNull();
 //        await Assert.That(result!.ShortCode).IsEqualTo("xyz789");
 //    }

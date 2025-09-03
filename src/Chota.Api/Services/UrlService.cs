@@ -13,14 +13,16 @@ public sealed class UrlService(IUrlRepository urlRepository, IIdGeneratorService
         if (!urlValidator.IsValid(longUrl))
             return Error.Validation("Invalid URL format.");
 
-        var existingUrl = await urlRepository.GetByLongUrl(longUrl);
+        var hash = idGeneratorService.HashLongUrl(longUrl);
+
+        var existingUrl = await urlRepository.GetByLongUrl(hash);
         if (existingUrl is not null)
             return existingUrl;
 
         var id = idGeneratorService.GenerateNextId();
         var shortCode = urlEncoder.Encode(id);
 
-        var shortUrl = new ShortUrl(id, longUrl, shortCode, DateTime.UtcNow);
+        var shortUrl = new ShortUrl(id, longUrl, shortCode, hash, DateTime.UtcNow);
 
         await urlRepository.Save(shortUrl);
 
@@ -35,10 +37,6 @@ public sealed class UrlService(IUrlRepository urlRepository, IIdGeneratorService
         var shortUrl = await urlRepository.GetByShortCode(shortCode);
         if (shortUrl is null)
             return Error.NotFound("Short URL not found.");
-
-        // update the count of the found ShortUrl
-        shortUrl.BrowserClickCount++;
-        await urlRepository.Save(shortUrl);
 
         return shortUrl;
     }

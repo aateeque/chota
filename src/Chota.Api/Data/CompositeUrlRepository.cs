@@ -9,7 +9,7 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
                                            IIdGeneratorService idGenerator,
                                            ILogger<CompositeUrlRepository> logger) : IUrlRepository
 {
-    public async Task<ShortUrl?> GetByShortCode(string shortCode)
+    public async ValueTask<ShortUrl?> GetByShortCode(string shortCode)
     {
         logger.LogDebug("Looking up URL by short code: {ShortCode}", shortCode);
 
@@ -48,23 +48,21 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
         return null;
     }
 
-    public async Task<ShortUrl?> GetByLongUrl(string longUrl)
+    public async ValueTask<ShortUrl?> GetByLongUrl(string urlHash)
     {
-        logger.LogDebug("Looking up URL by long URL");
-
         // L1 Cache: Memory
-        var result = await memoryRepository.GetByLongUrl(longUrl);
+        var result = await memoryRepository.GetByLongUrl(urlHash);
         if (result is not null)
         {
-            logger.LogDebug("L1 cache hit for long URL: {longUrl}", longUrl);
+            logger.LogDebug("L1 cache hit for long URL: {urlHash}", urlHash);
             return result;
         }
 
         // L2 Cache: Redis
-        result = await cacheRepository.GetByLongUrl(longUrl);
+        result = await cacheRepository.GetByLongUrlHash(urlHash);
         if (result is not null)
         {
-            logger.LogDebug("L2 cache hit for long URL: {longUrl}", longUrl);
+            logger.LogDebug("L2 cache hit for long URL: {urlHash}", urlHash);
 
             // Store in L1 cache for future requests
             await memoryRepository.Save(result);
@@ -72,10 +70,10 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
         }
 
         // L3 Database: PostgreSQL
-        result = await postgresRepository.GetByLongUrl(longUrl);
+        result = await postgresRepository.GetByLongUrl(urlHash);
         if (result is not null)
         {
-            logger.LogDebug("L3 database hit for long URL: {longUrl}", longUrl);
+            logger.LogDebug("L3 database hit for long URL: {urlHash}", urlHash);
 
             // Store in both cache layers for future requests
             await cacheRepository.Set(result);
@@ -87,11 +85,11 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
         return null;
     }
 
-    public async Task Save(ShortUrl shortUrl)
+    public async ValueTask Save(ShortUrl shortUrl)
     {
         logger.LogDebug("Saving URL with short code: {ShortCode}", shortUrl.ShortCode);
 
-        var savedId = await postgresRepository.Save(shortUrl);
+        await postgresRepository.Save(shortUrl);
 
         // Update cache layers for future reads
         await cacheRepository.Set(shortUrl);
@@ -100,9 +98,8 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
         logger.LogDebug("Successfully saved URL to database and all cache layers: {ShortCode}", shortUrl.ShortCode);
     }
 
-    public async Task<long> GetNextId()
+    public ValueTask Update(ShortUrl shortUrl)
     {
-        var id = idGenerator.GenerateNextId();
-        return await Task.FromResult(id);
+        throw new NotImplementedException();
     }
 }
