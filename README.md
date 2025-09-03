@@ -39,9 +39,9 @@ See the URLs in the Resources tab on the [Aspire Dashboard](https://localhost:17
 
 You will need the following to run Chota:
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet)
+- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet) 
 - [Docker](https://www.docker.com/)
-- Aspire CLI: [`curl -sSL https://aspire.dev/install.sh | bash`](https://learn.microsoft.com/en-us/dotnet/aspire/cli/install) (used for local development orchestration)
+- [Aspire CLI](https://learn.microsoft.com/en-us/dotnet/aspire/cli/install) `curl -sSL https://aspire.dev/install.sh | bash`
 
 ## Getting Started
 
