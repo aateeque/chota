@@ -80,6 +80,7 @@ dotnet ef database update --project src/Chota.Api
 ## Service Dependencies
 
 The AppHost orchestrates service startup order:
+
 1. PostgreSQL and Redis containers
 2. Database migration service
 3. API service (depends on successful migrations)
@@ -87,7 +88,7 @@ The AppHost orchestrates service startup order:
 
 ## Development Workflow
 
-1. Use `dotnet run --project src/Chota.AppHost` to start all services
+1. Use `aspire run` to start all services
 2. Access the API documentation via Scalar UI
 3. The AppHost provides URLs for all services including Redis Commander and pgAdmin
 4. Tests use Testcontainers for isolated integration testing

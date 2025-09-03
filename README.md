@@ -58,3 +58,44 @@ You will need the following to run Chota:
 3. Explore the API using the [Scalar UI](https://scalar.com/)
 4. Interact with the API endpoints as needed
 5. We ship _[Redis Commander](http://localhost:53662/)_ as well as _[pgAdmin](http://localhost:53664/)_ for an in-browser database management experience; browse to the UI from the Aspire Dashboard
+
+## Development Commands
+
+### Building and Running
+
+```bash
+# Restore dependencies
+dotnet restore
+
+# Build the solution
+dotnet build
+
+# Run with Aspire orchestrator (recommended for development)
+aspire run
+```
+
+### Testing
+
+```bash
+# Run all tests
+dotnet test
+
+# Run tests with specific verbosity
+dotnet test --verbosity normal
+
+# Run tests without building first
+dotnet test --no-build
+```
+
+### Database Operations
+
+```bash
+# Install EF Core tools (if not already installed)
+dotnet tool restore
+
+# Add new migration
+dotnet ef migrations add <MigrationName> --project src/Chota.Api
+
+# Update database (usually handled by MigrationService)
+dotnet ef database update --project src/Chota.Api
+```
