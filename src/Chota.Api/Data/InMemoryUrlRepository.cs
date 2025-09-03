@@ -15,15 +15,15 @@ public sealed class InMemoryUrlRepository : IUrlRepository
         return ValueTask.FromResult(shortUrl);
     }
 
-    public ValueTask<ShortUrl?> GetByLongUrl(string longUrl)
+    public ValueTask<ShortUrl?> GetByLongUrl(string longUrlHash)
     {
-        _urlsByLongUrl.TryGetValue(longUrl, out var shortUrl);
+        _urlsByLongUrl.TryGetValue(longUrlHash, out var shortUrl);
         return ValueTask.FromResult(shortUrl);
     }
 
     public ValueTask Save(ShortUrl shortUrl)
     {
-        _ = _urlsByLongUrl.TryAdd(shortUrl.LongUrl, shortUrl) && _urlsByShortCode.TryAdd(shortUrl.ShortCode, shortUrl);
+        _ = _urlsByLongUrl.TryAdd(shortUrl.LongUrlHash, shortUrl) && _urlsByShortCode.TryAdd(shortUrl.ShortCode, shortUrl);
         return ValueTask.CompletedTask;
 
     }

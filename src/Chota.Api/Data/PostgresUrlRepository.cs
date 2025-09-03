@@ -82,6 +82,25 @@ public sealed class PostgresUrlRepository(UrlDbContext context, ILogger<Postgres
         }
     }
 
+    public async Task Update(ShortUrl shortUrl)
+    {
+        try
+        {
+            var sUrl = await context.ShortUrls.FirstOrDefaultAsync(url => url.Id == shortUrl.Id);
+            if (sUrl != null)
+            {
+                sUrl.ApiClickCount = shortUrl.ApiClickCount;
+                sUrl.BrowserClickCount = shortUrl.BrowserClickCount;
+
+                await context.SaveChangesAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to update analytics counters");
+        }
+    }
+
     public async Task<bool> ExistsById(long id)
     {
         try

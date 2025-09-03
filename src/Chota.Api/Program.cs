@@ -21,7 +21,7 @@ builder.Services.AddHealthChecks();
 // Register caching services
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("redis");
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
 builder.AddNpgsqlDbContext<UrlDbContext>(connectionName: "Chota");
@@ -70,7 +70,7 @@ app.MapPost("/api/create", async (CreateUrlRequest request, IUrlService urlServi
     });
 });
 
-app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [FromServices] IHttpContextAccessor httpContextAccessor) =>
+app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [FromServices] IHttpContextAccessor httpContextAccessor, [FromServices] IPostgresUrlRepository postgresUrlRepository) =>
 {
     var result = await urlService.GetByShortCode(shortCode);
 
@@ -83,17 +83,19 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [Fro
             _ => Results.Problem(title: "An error occurred", detail: result.Error.Description)
         };
     }
+    
+    if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla") || httpContextAccessor.HttpContext.Request.Headers.UserAgent.Contains("Chrome"))
+    {
+        result.Value!.BrowserClickCount++;
+    }
+    else
+    {
+        // This is an API request - could add ApiClickCount tracking here
+        result.Value!.ApiClickCount++;
+    }
 
-    // ToDO: increment counters on a background worker
-    //if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
-    //{
-    //    result.Value!.BrowserClickCount++;
-    //}
-    //else
-    //{
-    //    // This is an API request - could add ApiClickCount tracking here
-    //    result.Value!.ApiClickCount++;
-    //}
+    // fire & forget analytics update
+    await postgresUrlRepository.Update(result.Value);
 
     return Results.Redirect(result.Value!.LongUrl, permanent: true);
 });
