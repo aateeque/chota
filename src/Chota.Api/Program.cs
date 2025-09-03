@@ -70,7 +70,7 @@ app.MapPost("/api/create", async (CreateUrlRequest request, IUrlService urlServi
     });
 });
 
-app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [FromServices] IHttpContextAccessor httpContextAccessor) =>
+app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [FromServices] IHttpContextAccessor httpContextAccessor, [FromServices] IPostgresUrlRepository postgresUrlRepository) =>
 {
     var result = await urlService.GetByShortCode(shortCode);
 
@@ -84,16 +84,18 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [Fro
         };
     }
 
-    // ToDO: increment counters on a background worker
-    //if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
-    //{
-    //    result.Value!.BrowserClickCount++;
-    //}
-    //else
-    //{
-    //    // This is an API request - could add ApiClickCount tracking here
-    //    result.Value!.ApiClickCount++;
-    //}
+    if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
+    {
+        result.Value!.BrowserClickCount++;
+    }
+    else
+    {
+        // This is an API request - could add ApiClickCount tracking here
+        result.Value!.ApiClickCount++;
+    }
+
+    // fire & forget analytics update
+    _ = Task.Run(async () => await postgresUrlRepository.Update(result.Value));
 
     return Results.Redirect(result.Value!.LongUrl, permanent: true);
 });
