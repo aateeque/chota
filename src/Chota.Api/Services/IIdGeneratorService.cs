@@ -3,4 +3,6 @@
 public interface IIdGeneratorService
 {
     long GenerateNextId();
+
+    string HashLongUrl(string longUrl);
 }

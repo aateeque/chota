@@ -50,8 +50,6 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
 
     public async Task<ShortUrl?> GetByLongUrl(string longUrl)
     {
-        logger.LogDebug("Looking up URL by long URL");
-
         // L1 Cache: Memory
         var result = await memoryRepository.GetByLongUrl(longUrl);
         if (result is not null)
@@ -61,7 +59,7 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
         }
 
         // L2 Cache: Redis
-        result = await cacheRepository.GetByLongUrl(longUrl);
+        result = await cacheRepository.GetByLongUrlHash(longUrl);
         if (result is not null)
         {
             logger.LogDebug("L2 cache hit for long URL: {longUrl}", longUrl);
@@ -98,11 +96,5 @@ public sealed class CompositeUrlRepository(InMemoryUrlRepository memoryRepositor
         await memoryRepository.Save(shortUrl);
 
         logger.LogDebug("Successfully saved URL to database and all cache layers: {ShortCode}", shortUrl.ShortCode);
-    }
-
-    public async Task<long> GetNextId()
-    {
-        var id = idGenerator.GenerateNextId();
-        return await Task.FromResult(id);
     }
 }

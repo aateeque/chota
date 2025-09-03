@@ -20,7 +20,7 @@
 
 //        // Setup default mock behaviors for performance testing
 //        _mockValidator.IsValid(Arg.Any<string>()).Returns(true);
-//        _mockRepository.GetByLongUrl(Arg.Any<string>()).Returns((ShortUrl?)null);
+//        _mockRepository.GetByLongUrlHash(Arg.Any<string>()).Returns((ShortUrl?)null);
 //        _mockIdGenerator.GenerateNextId().Returns(12345L);
 //        _mockEncoder.Encode(Arg.Any<long>()).Returns("abc123");
 //        _mockRepository.Save(Arg.Any<ShortUrl>()).Returns(Task.CompletedTask);

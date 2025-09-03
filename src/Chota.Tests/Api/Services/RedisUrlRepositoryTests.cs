@@ -79,7 +79,7 @@ public sealed class RedisUrlRepositoryTests
                   .Returns(Task.FromResult<string?>(json));
 
         // Act
-        var result = await _repository.GetByLongUrl(longUrl);
+        var result = await _repository.GetByLongUrlHash(longUrl);
 
         // Assert
         await Assert.That(result).IsNotNull();
@@ -99,7 +99,7 @@ public sealed class RedisUrlRepositoryTests
                   .Returns(Task.FromResult((string?)null));
 
         // Act
-        var result = await _repository.GetByLongUrl(longUrl);
+        var result = await _repository.GetByLongUrlHash(longUrl);
 
         // Assert
         await Assert.That(result).IsNull();
@@ -273,9 +273,9 @@ public sealed class RedisUrlRepositoryTests
     public async Task GetByLongUrl_WithNullOrEmpty_ReturnsNull()
     {
         // Act & Assert - These should not throw and should return null
-        var result1 = await _repository.GetByLongUrl(null!);
-        var result2 = await _repository.GetByLongUrl("");
-        var result3 = await _repository.GetByLongUrl("   ");
+        var result1 = await _repository.GetByLongUrlHash(null!);
+        var result2 = await _repository.GetByLongUrlHash("");
+        var result3 = await _repository.GetByLongUrlHash("   ");
 
         await Assert.That(result1).IsNull();
         await Assert.That(result2).IsNull();

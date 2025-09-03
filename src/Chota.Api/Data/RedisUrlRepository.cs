@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using Chota.Api.Models;
 
@@ -12,7 +11,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
     private readonly IDistributedCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     private readonly ILogger<RedisUrlRepository> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly RedisUrlRepositoryOptions _options = options?.Value ?? new RedisUrlRepositoryOptions();
-    private readonly ActivitySource _activitySource = new("Chota.Cache");
+    private readonly ActivitySource _activitySource = new("Chota.RedisCache");
 
     // Cache statistics
     private long _cacheHits;
@@ -20,10 +19,9 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
     private long _cacheErrors;
 
     // Cache key constants for consistency and performance
-    private const string CACHE_NAMESPACE = "urlshort";
-    private const string CACHE_VERSION = "v1";
-    private const string SHORT_CODE_PREFIX = "sc";
-    private const string LONG_URL_PREFIX = "lu";
+    private const string CacheNamespace = "urlshort";
+    private const string ShortCodePrefix = "sc";
+    private const string LongUrlPrefix = "lu";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -83,15 +81,15 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         }
     }
 
-    public async Task<ShortUrl?> GetByLongUrl(string longUrl)
+    public async Task<ShortUrl?> GetByLongUrlHash(string longUrlHash)
     {
-        if (string.IsNullOrWhiteSpace(longUrl))
+        if (string.IsNullOrWhiteSpace(longUrlHash))
         {
-            _logger.LogWarning("GetByLongUrl called with null or empty longUrl");
+            _logger.LogWarning("GetByLongUrlHash called with null or empty longUrlHash");
             return null;
         }
 
-        using var activity = _activitySource.StartActivity("RedisUrlRepository.GetByLongUrl");
+        using var activity = _activitySource.StartActivity(ActivityKind.Client);
         activity?.SetTag("cache.operation", "get");
         activity?.SetTag("cache.key_type", "long_url");
 
@@ -99,7 +97,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
 
         try
         {
-            var key = GetLongUrlKey(longUrl);
+            var key = GetLongUrlKey(longUrlHash);
             var json = await _cache.GetStringAsync(key);
 
             stopwatch.Stop();
@@ -125,27 +123,20 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             activity?.SetTag("cache.error", true);
             activity?.SetTag("cache.error.message", ex.Message);
 
-            _logger.LogWarning(ex, "Failed to get URL by long URL from cache (took {ElapsedMs}ms)",
-                stopwatch.ElapsedMilliseconds);
+            _logger.LogWarning(ex, "Failed to get URL by long URL from cache (took {ElapsedMs}ms)", stopwatch.ElapsedMilliseconds);
             return null;
         }
     }
 
     public async Task Set(ShortUrl shortUrl, TimeSpan? expiration = null)
     {
-        if (shortUrl is null)
-        {
-            _logger.LogWarning("Set called with null shortUrl");
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(shortUrl.ShortCode) || string.IsNullOrWhiteSpace(shortUrl.LongUrl))
         {
             _logger.LogWarning("Set called with invalid shortUrl - missing ShortCode or LongUrl");
             return;
         }
 
-        using var activity = _activitySource.StartActivity("RedisUrlRepository.Set");
+        using var activity = _activitySource.StartActivity(ActivityKind.Client);
         activity?.SetTag("cache.operation", "set");
 
         var stopwatch = Stopwatch.StartNew();
@@ -168,8 +159,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             await Task.WhenAll(setTasks);
             stopwatch.Stop();
 
-            _logger.LogDebug("Cached URL with short code: {ShortCode} (took {ElapsedMs}ms)",
-                shortUrl.ShortCode, stopwatch.ElapsedMilliseconds);
+            _logger.LogDebug("Cached URL with short code: {ShortCode} (took {ElapsedMs}ms)", shortUrl.ShortCode, stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
@@ -190,7 +180,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             return;
         }
 
-        using var activity = _activitySource.StartActivity("RedisUrlRepository.Remove");
+        using var activity = _activitySource.StartActivity();
         activity?.SetTag("cache.operation", "remove");
 
         try
@@ -215,7 +205,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             return false;
         }
 
-        using var activity = _activitySource.StartActivity("RedisUrlRepository.Exists");
+        using var activity = _activitySource.StartActivity();
         activity?.SetTag("cache.operation", "exists");
 
         try
@@ -238,7 +228,6 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         }
     }
 
-    // Enhanced cache invalidation methods
     public async Task RemoveByShortCode(string shortCode)
     {
         if (string.IsNullOrWhiteSpace(shortCode))
@@ -261,23 +250,6 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         await Remove(key);
     }
 
-    public async Task RemoveAll(ShortUrl shortUrl)
-    {
-        if (shortUrl is null || string.IsNullOrWhiteSpace(shortUrl.ShortCode) || string.IsNullOrWhiteSpace(shortUrl.LongUrl))
-        {
-            return;
-        }
-
-        var tasks = new[]
-        {
-            RemoveByShortCode(shortUrl.ShortCode),
-            RemoveByLongUrl(shortUrl.LongUrl)
-        };
-
-        await Task.WhenAll(tasks);
-    }
-
-    // Cache statistics for monitoring
     public CacheStatistics GetStatistics()
     {
         return new CacheStatistics
@@ -296,12 +268,9 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         Interlocked.Exchange(ref _cacheErrors, 0);
     }
 
-    // Private helper methods
-    private static string GetShortCodeKey(string shortCode)
-        => $"{CACHE_NAMESPACE}:{CACHE_VERSION}:{SHORT_CODE_PREFIX}:{shortCode}";
+    private static string GetShortCodeKey(string shortCode) => $"{CacheNamespace}:{ShortCodePrefix}:{shortCode}";
 
-    private static string GetLongUrlKey(string longUrl)
-        => $"{CACHE_NAMESPACE}:{CACHE_VERSION}:{LONG_URL_PREFIX}:{GetUrlHash(longUrl)}";
+    private static string GetLongUrlKey(string longUrl) => $"{CacheNamespace}:{LongUrlPrefix}:{longUrl}";
 
     private DistributedCacheEntryOptions GetCacheOptions(TimeSpan? expiration)
     {
@@ -327,32 +296,5 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         var total = hits + misses;
 
         return total == 0 ? 0.0 : (double)hits / total * 100.0;
-    }
-
-    /// <summary>
-    /// Fast, deterministic hash function using FNV-1a algorithm.
-    /// Much better than GetHashCode() which is non-deterministic across app restarts.
-    /// </summary>
-    private static string GetUrlHash(string url)
-    {
-        if (string.IsNullOrEmpty(url))
-            return "0";
-
-        // Normalize URL for consistent hashing (lowercase, trim)
-        var normalizedUrl = url.Trim().ToLowerInvariant();
-        var bytes = Encoding.UTF8.GetBytes(normalizedUrl);
-
-        // FNV-1a hash algorithm - fast and deterministic
-        const ulong FnvOffsetBasis = 14695981039346656037UL;
-        const ulong FnvPrime = 1099511628211UL;
-
-        var hash = FnvOffsetBasis;
-        foreach (var b in bytes)
-        {
-            hash ^= b;
-            hash *= FnvPrime;
-        }
-
-        return hash.ToString("X16"); // 16-character hex representation
     }
 }

@@ -29,4 +29,6 @@ builder.AddProject<Chota_Api>("api")
        .WithReference(migrations)
        .WaitFor(migrations);
 
+builder.AddProject<Projects.Chota_RedisHydrator>("chota-redishydrator");
+
 builder.Build().Run();

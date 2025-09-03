@@ -13,7 +13,9 @@ public sealed class UrlService(IUrlRepository urlRepository, IIdGeneratorService
         if (!urlValidator.IsValid(longUrl))
             return Error.Validation("Invalid URL format.");
 
-        var existingUrl = await urlRepository.GetByLongUrl(longUrl);
+        var hash = idGeneratorService.HashLongUrl(longUrl);
+
+        var existingUrl = await urlRepository.GetByLongUrl(hash);
         if (existingUrl is not null)
             return existingUrl;
 

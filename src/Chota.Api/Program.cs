@@ -18,8 +18,6 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks();
 
-// builder.AddNpgsqlDataSource(connectionName: "postgres");
-
 // Register caching services
 builder.Services.AddStackExchangeRedisCache(options =>
 {
