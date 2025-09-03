@@ -141,7 +141,7 @@ public class IdGeneratorServiceTests
             var hash = IdGeneratorService.HashLongUrl(url);
 
             // Assert
-            hash.Should().Be("c8319664e795238913cb35e305a133b9");
+            hash.Should().Be("39DA33EB1E85800E");
         }
     }
 

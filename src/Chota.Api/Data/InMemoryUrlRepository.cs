@@ -9,27 +9,27 @@ public sealed class InMemoryUrlRepository : IUrlRepository
     private readonly ConcurrentDictionary<string, ShortUrl> _urlsByShortCode = new();
     private readonly ConcurrentDictionary<string, ShortUrl> _urlsByLongUrl = new();
 
-    public Task<ShortUrl?> GetByShortCode(string shortCode)
+    public ValueTask<ShortUrl?> GetByShortCode(string shortCode)
     {
         _urlsByShortCode.TryGetValue(shortCode, out var shortUrl);
-        return Task.FromResult(shortUrl);
+        return ValueTask.FromResult(shortUrl);
     }
 
-    public Task<ShortUrl?> GetByLongUrl(string longUrl)
+    public ValueTask<ShortUrl?> GetByLongUrl(string longUrl)
     {
         _urlsByLongUrl.TryGetValue(longUrl, out var shortUrl);
-        return Task.FromResult(shortUrl);
+        return ValueTask.FromResult(shortUrl);
     }
 
-    public Task Save(ShortUrl shortUrl)
+    public ValueTask Save(ShortUrl shortUrl)
     {
         _ = _urlsByLongUrl.TryAdd(shortUrl.LongUrl, shortUrl) && _urlsByShortCode.TryAdd(shortUrl.ShortCode, shortUrl);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
 
     }
 
-    public Task<string> GetNextId()
+    public ValueTask Update(ShortUrl shortUrl)
     {
-        throw new NotImplementedException();
+        return ValueTask.CompletedTask;
     }
 }

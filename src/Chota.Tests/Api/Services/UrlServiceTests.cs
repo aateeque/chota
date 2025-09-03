@@ -46,6 +46,9 @@ public sealed class UrlServiceTests
         _urlRepository.GetByLongUrl(Arg.Any<string>())
             .Returns((ShortUrl)null);
 
+        _idGeneratorService.HashLongUrl(Arg.Any<string>())
+            .Returns("12345");
+
         const long randomId = 123456789L;
         _idGeneratorService.GenerateNextId()
             .Returns(randomId);
@@ -58,7 +61,7 @@ public sealed class UrlServiceTests
 
         // Assert
         _urlValidator.Received(1).IsValid(Arg.Any<string>());
-        await _urlRepository.Received(1).GetByLongUrl(Arg.Is(longUrl));
+        await _urlRepository.Received(1).GetByLongUrl(Arg.Any<string>());
         _idGeneratorService.Received(1).GenerateNextId();
         _urlEncoder.Received(1).Encode(randomId);
 

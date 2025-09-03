@@ -108,7 +108,7 @@ public class Worker(IServiceProvider serviceProvider, IHostApplicationLifetime h
                 return;
             }
 
-            ShortUrl firstShortUrl = new(0L, string.Empty, string.Empty, DateTime.UnixEpoch);
+            ShortUrl firstShortUrl = new(0L, string.Empty, string.Empty, string.Empty, DateTime.UnixEpoch);
 
             var strategy = dbContext.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>

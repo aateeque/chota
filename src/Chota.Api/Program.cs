@@ -84,14 +84,16 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [Fro
         };
     }
 
-    if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
-    {
-        result.Value!.BrowserClickCount++;
-    }
-    else
-    {
-        // This is an API request - could add ApiClickCount tracking here
-    }
+    // ToDO: increment counters on a background worker
+    //if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
+    //{
+    //    result.Value!.BrowserClickCount++;
+    //}
+    //else
+    //{
+    //    // This is an API request - could add ApiClickCount tracking here
+    //    result.Value!.ApiClickCount++;
+    //}
 
     return Results.Redirect(result.Value!.LongUrl, permanent: true);
 });

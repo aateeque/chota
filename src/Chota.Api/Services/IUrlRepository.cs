@@ -4,9 +4,11 @@ namespace Chota.Api.Services;
 
 public interface IUrlRepository
 {
-    Task<ShortUrl?> GetByShortCode(string shortCode);
+    ValueTask<ShortUrl?> GetByShortCode(string shortCode);
 
-    Task<ShortUrl?> GetByLongUrl(string longUrl);
+    ValueTask<ShortUrl?> GetByLongUrl(string longUrl);
 
-    Task Save(ShortUrl shortUrl);
+    ValueTask Save(ShortUrl shortUrl);
+
+    ValueTask Update(ShortUrl shortUrl);
 }
