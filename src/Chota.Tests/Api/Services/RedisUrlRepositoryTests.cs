@@ -206,19 +206,6 @@ public sealed class RedisUrlRepositoryTests
    }
 
    [Test]
-   public async Task Remove_CallsCacheRemove()
-   {
-       // Arrange
-       var key = "test-key";
-
-       // Act
-       await _repository.Remove(key);
-
-       // Assert
-       await _mockCache.Received(1).RemoveAsync(key, Arg.Any<CancellationToken>());
-   }
-
-   [Test]
    public async Task GetStatistics_ReturnsCorrectInitialValues()
    {
        // Act

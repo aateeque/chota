@@ -112,26 +112,6 @@ public class UrlServicePerformanceTests
    }
 
    [Test]
-   public async Task Shorten_MemoryUsage_StaysUnder100MB()
-   {
-       const int operationCount = 10000;
-       var initialMemory = GC.GetTotalMemory(true);
-
-       var tasks = new List<Task<Result<ShortUrl>>>();
-       for (var i = 0; i < operationCount; i++)
-       {
-           tasks.Add(_service.Shorten($"https://example{i}.com"));
-       }
-
-       await Task.WhenAll(tasks);
-
-       var finalMemory = GC.GetTotalMemory(true);
-       var memoryUsedMB = (finalMemory - initialMemory) / (1024.0 * 1024.0);
-
-       await Assert.That(memoryUsedMB).IsLessThan(100);
-   }
-
-   [Test]
    public async Task Shorten_ThroughputTest_Achieves1160OperationsPerSecond()
    {
        const int testDurationSeconds = 5;

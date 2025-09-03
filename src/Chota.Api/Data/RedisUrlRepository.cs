@@ -8,6 +8,11 @@ namespace Chota.Api.Data;
 
 public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrlRepository> logger, IOptions<RedisUrlRepositoryOptions>? options = null) : ICacheRepository
 {
+    // Cache key constants for consistency and performance
+    private const string CacheNamespace = "urlshort";
+    private const string ShortCodePrefix = "sc";
+    private const string LongUrlPrefix = "lu";
+
     private readonly IDistributedCache _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     private readonly ILogger<RedisUrlRepository> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly RedisUrlRepositoryOptions _options = options?.Value ?? new RedisUrlRepositoryOptions();
@@ -17,11 +22,6 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
     private long _cacheHits;
     private long _cacheMisses;
     private long _cacheErrors;
-
-    // Cache key constants for consistency and performance
-    private const string CacheNamespace = "urlshort";
-    private const string ShortCodePrefix = "sc";
-    private const string LongUrlPrefix = "lu";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -38,7 +38,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             return null;
         }
 
-        using var activity = _activitySource.StartActivity("RedisUrlRepository.GetByShortCode");
+        using var activity = _activitySource.StartActivity();
         activity?.SetTag("cache.operation", "get");
         activity?.SetTag("cache.key_type", "short_code");
 
@@ -55,8 +55,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             {
                 Interlocked.Increment(ref _cacheMisses);
                 activity?.SetTag("cache.hit", false);
-                _logger.LogDebug("Cache miss for short code: {ShortCode} (took {ElapsedMs}ms)",
-                    shortCode, stopwatch.ElapsedMilliseconds);
+                _logger.LogDebug("Cache miss for short code: {ShortCode} (took {ElapsedMs}ms)", shortCode, stopwatch.ElapsedMilliseconds);
                 return null;
             }
 
@@ -64,8 +63,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             Interlocked.Increment(ref _cacheHits);
             activity?.SetTag("cache.hit", true);
 
-            _logger.LogDebug("Cache hit for short code: {ShortCode} (took {ElapsedMs}ms)",
-                shortCode, stopwatch.ElapsedMilliseconds);
+            _logger.LogDebug("Cache hit for short code: {ShortCode} (took {ElapsedMs}ms)", shortCode, stopwatch.ElapsedMilliseconds);
 
             return shortUrl;
         }
@@ -75,8 +73,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             activity?.SetTag("cache.error", true);
             activity?.SetTag("cache.error.message", ex.Message);
 
-            _logger.LogWarning(ex, "Failed to get URL by short code from cache: {ShortCode} (took {ElapsedMs}ms)",
-                shortCode, stopwatch.ElapsedMilliseconds);
+            _logger.LogWarning(ex, "Failed to get URL by short code from cache: {ShortCode} (took {ElapsedMs}ms)", shortCode, stopwatch.ElapsedMilliseconds);
             return null;
         }
     }
@@ -172,7 +169,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         }
     }
 
-    public async Task Remove(string key)
+    private async Task Remove(string key)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -228,28 +225,6 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
         }
     }
 
-    public async Task RemoveByShortCode(string shortCode)
-    {
-        if (string.IsNullOrWhiteSpace(shortCode))
-        {
-            return;
-        }
-
-        var key = GetShortCodeKey(shortCode);
-        await Remove(key);
-    }
-
-    public async Task RemoveByLongUrl(string longUrl)
-    {
-        if (string.IsNullOrWhiteSpace(longUrl))
-        {
-            return;
-        }
-
-        var key = GetLongUrlKey(longUrl);
-        await Remove(key);
-    }
-
     public CacheStatistics GetStatistics()
     {
         return new CacheStatistics
@@ -271,6 +246,28 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
     private static string GetShortCodeKey(string shortCode) => $"{CacheNamespace}:{ShortCodePrefix}:{shortCode}";
 
     private static string GetLongUrlKey(string longUrl) => $"{CacheNamespace}:{LongUrlPrefix}:{longUrl}";
+    
+    private async Task RemoveByShortCode(string shortCode)
+    {
+        if (string.IsNullOrWhiteSpace(shortCode))
+        {
+            return;
+        }
+
+        var key = GetShortCodeKey(shortCode);
+        await Remove(key);
+    }
+
+    private async Task RemoveByLongUrl(string longUrl)
+    {
+        if (string.IsNullOrWhiteSpace(longUrl))
+        {
+            return;
+        }
+
+        var key = GetLongUrlKey(longUrl);
+        await Remove(key);
+    }
 
     private DistributedCacheEntryOptions GetCacheOptions(TimeSpan? expiration)
     {
