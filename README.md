@@ -57,7 +57,7 @@ You will need the following to run Chota:
 2. Access the API at `https://localhost:7500/`
 3. Explore the API using the [Scalar UI](https://scalar.com/)
 4. Interact with the API endpoints as needed
-5. We ship _[Redis Commander](http://localhost:53662/)_ as well as _[pgAdmin](http://localhost:53664/)_ for an in-browser database management experience; browse to the UI from the Aspire Dashboard
+5. We ship _[Redis Commander](https://joeferner.github.io/redis-commander/)_ as well as _[pgAdmin](https://hub.docker.com/r/dpage/pgadmin4/)_ for an in-browser database management experience; browse to the UI from the Aspire Dashboard
 
 ## Development Commands
 
