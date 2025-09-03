@@ -144,7 +144,7 @@ public sealed class RedisUrlRepository(IDistributedCache cache, ILogger<RedisUrl
             var options = GetCacheOptions(expiration);
 
             var shortCodeKey = GetShortCodeKey(shortUrl.ShortCode);
-            var longUrlKey = GetLongUrlKey(shortUrl.LongUrl);
+            var longUrlKey = GetLongUrlKey(shortUrl.LongUrlHash);
 
             // Use parallel execution for better performance
             var setTasks = new[]

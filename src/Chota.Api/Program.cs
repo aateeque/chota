@@ -83,8 +83,8 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [Fro
             _ => Results.Problem(title: "An error occurred", detail: result.Error.Description)
         };
     }
-
-    if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla"))
+    
+    if (httpContextAccessor.HttpContext!.Request.Headers.UserAgent.Contains("Mozilla") || httpContextAccessor.HttpContext.Request.Headers.UserAgent.Contains("Chrome"))
     {
         result.Value!.BrowserClickCount++;
     }
@@ -95,7 +95,7 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlService urlService, [Fro
     }
 
     // fire & forget analytics update
-    _ = Task.Run(async () => await postgresUrlRepository.Update(result.Value));
+    await postgresUrlRepository.Update(result.Value);
 
     return Results.Redirect(result.Value!.LongUrl, permanent: true);
 });
