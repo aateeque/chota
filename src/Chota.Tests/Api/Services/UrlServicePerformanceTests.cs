@@ -20,10 +20,10 @@ public class UrlServicePerformanceTests
 
        // Setup default mock behaviors for performance testing
        _mockValidator.IsValid(Arg.Any<string>()).Returns(true);
-       _mockRepository.GetByLongUrlHash(Arg.Any<string>()).Returns((ShortUrl?)null);
+       _mockRepository.GetByLongUrl(Arg.Any<string>()).Returns((ShortUrl?)null);
        _mockIdGenerator.GenerateNextId().Returns(12345L);
        _mockEncoder.Encode(Arg.Any<long>()).Returns("abc123");
-       _mockRepository.Save(Arg.Any<ShortUrl>()).Returns(Task.CompletedTask);
+       _mockRepository.Save(Arg.Any<ShortUrl>()).Returns(ValueTask.CompletedTask);
    }
 
    [Test]
@@ -41,7 +41,7 @@ public class UrlServicePerformanceTests
    public async Task Shorten_100ConcurrentOperations_CompletesUnder500Milliseconds()
    {
        const int operationCount = 100;
-       var tasks = new List<Task<Result<string>>>();
+       var tasks = new List<Task<Result<ShortUrl>>>();
        var stopwatch = Stopwatch.StartNew();
 
        for (var i = 0; i < operationCount; i++)
@@ -78,7 +78,7 @@ public class UrlServicePerformanceTests
    [Test]
    public async Task GetByShortCode_SingleOperation_CompletesUnder5Milliseconds()
    {
-       var shortUrl = new ShortUrl(1L, "https://example.com", "abc123", DateTime.UtcNow);
+       var shortUrl = new ShortUrl(1L, "https://example.com", "abc123", "xyz123", DateTime.UtcNow);
        _mockRepository.GetByShortCode(Arg.Any<string>()).Returns(shortUrl);
 
        var stopwatch = Stopwatch.StartNew();
@@ -93,7 +93,7 @@ public class UrlServicePerformanceTests
    public async Task GetByShortCode_1000ConcurrentOperations_CompletesUnder200Milliseconds()
    {
        const int operationCount = 1000;
-       var shortUrl = new ShortUrl(1L, "https://example.com", "abc123", DateTime.UtcNow);
+       var shortUrl = new ShortUrl(1L, "https://example.com", "abc123", "xyz123", DateTime.UtcNow);
        _mockRepository.GetByShortCode(Arg.Any<string>()).Returns(shortUrl);
 
        var tasks = new List<Task<Result<ShortUrl>>>();
@@ -117,7 +117,7 @@ public class UrlServicePerformanceTests
        const int operationCount = 10000;
        var initialMemory = GC.GetTotalMemory(true);
 
-       var tasks = new List<Task<Result<string>>>();
+       var tasks = new List<Task<Result<ShortUrl>>>();
        for (var i = 0; i < operationCount; i++)
        {
            tasks.Add(_service.Shorten($"https://example{i}.com"));
@@ -157,7 +157,7 @@ public class UrlServicePerformanceTests
        const int testDurationSeconds = 5;
        const int targetThroughput = 11600; // From NFRs: 11600 read operations per second
 
-       var shortUrl = new ShortUrl(1L, "https://example.com", "abc123", DateTime.UtcNow);
+       var shortUrl = new ShortUrl(1L, "https://example.com", "abc123", "xyz123", DateTime.UtcNow);
        _mockRepository.GetByShortCode(Arg.Any<string>()).Returns(shortUrl);
 
        var operationCount = 0;
